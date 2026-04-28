@@ -1,0 +1,119 @@
+#!/bin/bash
+
+usage() {
+  echo "Usage:"
+  echo "  whatsmyip local [--no-qrcode] [--append-port PORT]"
+  echo "  whatsmyip global [--no-qrcode] [--append-port PORT]"
+  echo "  whatsmyip --help"
+  echo
+  echo "Commands:"
+  echo "  local     Show local IP"
+  echo "  global    Show public IP"
+  echo
+  echo "Options:"
+  echo "  --no-qrcode        Disable QR code output"
+  echo "  --append-port PORT Append port to URL (e.g. :3000)"
+}
+
+NO_QR=false
+PORT=""
+
+# help
+if [[ "$1" == "--help" || "$1" == "-h" || -z "$1" ]]; then
+  usage
+  exit 0
+fi
+
+CMD=$1
+shift
+
+# parse optional flags
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --no-qrcode)
+      NO_QR=true
+      shift
+      ;;
+    --append-port)
+      PORT="$2"
+      shift 2
+      ;;
+    *)
+      shift
+      ;;
+  esac
+done
+
+print_qr() {
+  if ! $NO_QR; then
+    qrencode -t ANSI "$1"
+  fi
+}
+
+build_url() {
+  local ip="$1"
+  if [[ -n "$PORT" ]]; then
+    echo "http://${ip}:${PORT}"
+  else
+    echo "http://${ip}"
+  fi
+}
+
+is_valid_ip() {
+  local ip="$1"
+
+  # format check
+  if [[ ! $ip =~ ^([0-9]{1,3}\.){3}[0-9]{1,3}$ ]]; then
+    return 1
+  fi
+
+  # range check (0–255)
+  IFS='.' read -r o1 o2 o3 o4 <<< "$ip"
+  for o in $o1 $o2 $o3 $o4; do
+    if ((o < 0 || o > 255)); then
+      return 1
+    fi
+  done
+
+  return 0
+}
+
+print_qr_safe() {
+  local ip="$1"
+
+  if ! is_valid_ip "$ip"; then
+    echo "QR code skipped (invalid IP)"
+    return
+  fi
+
+  local url
+  url=$(build_url "$ip")
+  print_qr "$url"
+}
+
+echo
+
+case "$CMD" in
+  local)
+    LOCAL_IP=$(ip -4 route get 1.1.1.1 | awk '{print $7; exit}')
+    echo "Local IP: $LOCAL_IP"
+
+    print_qr_safe "$LOCAL_IP"
+    ;;
+    
+  global)
+    PUBLIC_IP=$(curl -m 1 -s ifconfig.me 2>/dev/null \
+      || curl -m 1 -s ipinfo.io/ip 2>/dev/null \
+      || echo "unknown")
+
+    echo "Public IP: $PUBLIC_IP"
+
+    print_qr_safe "$PUBLIC_IP"
+    ;;
+    
+  *)
+    echo "Unknown command: $CMD"
+    usage
+    exit 1
+    ;;
+esac

@@ -1,10 +1,10 @@
 # whatsmyip
 
-A small Bash utility for quickly displaying your local or public IP address, with an optional QR code so you can scan it from your phone — handy for testing local dev servers on mobile.
+A small Bash utility for quickly displaying your private or public IP address, with an optional QR code so you can scan it from your phone — handy for testing local dev servers on mobile.
 
 ## Features
 
-- Show your **local** (LAN) IP address
+- Show your **private** (LAN) IP address
 - Show your **public** (WAN) IP address
 - Render a scannable **QR code** in the terminal
 - Optionally **append a port** to the URL (e.g. `http://192.168.1.42:3000`)
@@ -15,7 +15,7 @@ A small Bash utility for quickly displaying your local or public IP address, wit
 - `bash`
 - [`qrencode`](https://fukuchi.org/works/qrencode/) — for QR code output
 - `curl` — for fetching the public IP
-- `iproute2` (`ip` command) — for resolving the local IP
+- `iproute2` (`ip` command) — for resolving the private IP
 
 Install dependencies on Debian/Ubuntu:
 
@@ -43,17 +43,17 @@ You should now be able to run `whatsmyip` from anywhere.
 ## Usage
 
 ```
-whatsmyip local  [--no-qrcode] [--append-port PORT]
-whatsmyip global [--no-qrcode] [--append-port PORT]
+whatsmyip private [--no-qrcode] [--append-port PORT]
+whatsmyip public  [--no-qrcode] [--append-port PORT]
 whatsmyip --help
 ```
 
 ### Commands
 
-| Command  | Description                |
-|----------|----------------------------|
-| `local`  | Show your local (LAN) IP   |
-| `global` | Show your public (WAN) IP  |
+| Command   | Description                |
+|-----------|----------------------------|
+| `private` | Show your private (LAN) IP |
+| `public`  | Show your public (WAN) IP  |
 
 ### Options
 
@@ -65,27 +65,27 @@ whatsmyip --help
 
 ## Examples
 
-Show your local IP with a QR code:
+Show your private IP with a QR code:
 
 ```bash
-whatsmyip local
+whatsmyip private
 ```
 
-Show your local IP with a QR code pointing to a dev server on port 3000:
+Show your private IP with a QR code pointing to a dev server on port 3000:
 
 ```bash
-whatsmyip local --append-port 3000
+whatsmyip private --append-port 3000
 ```
 
 Show your public IP without a QR code:
 
 ```bash
-whatsmyip global --no-qrcode
+whatsmyip public --no-qrcode
 ```
 
 ## How it works
 
-- **Local IP** is resolved via `ip -4 route get 1.1.1.1`, which returns the source IP your machine would use to reach the internet.
+- **Private IP** is resolved via `ip -4 route get 1.1.1.1`, which returns the source IP your machine would use to reach the internet.
 - **Public IP** is fetched from `ifconfig.me`, falling back to `ipinfo.io/ip` if the first request fails or times out (1 second).
 - The QR code encodes a `http://<ip>[:port]` URL, suitable for scanning with a phone to open the address in a browser.
 

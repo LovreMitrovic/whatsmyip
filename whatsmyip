@@ -2,13 +2,13 @@
 
 usage() {
   echo "Usage:"
-  echo "  whatsmyip local [--no-qrcode] [--append-port PORT]"
-  echo "  whatsmyip global [--no-qrcode] [--append-port PORT]"
+  echo "  whatsmyip private [--no-qrcode] [--append-port PORT]"
+  echo "  whatsmyip public [--no-qrcode] [--append-port PORT]"
   echo "  whatsmyip --help"
   echo
   echo "Commands:"
-  echo "  local     Show local IP"
-  echo "  global    Show public IP"
+  echo "  private   Show private IP"
+  echo "  public    Show public IP"
   echo
   echo "Options:"
   echo "  --no-qrcode        Disable QR code output"
@@ -94,14 +94,14 @@ print_qr_safe() {
 echo
 
 case "$CMD" in
-  local)
-    LOCAL_IP=$(ip -4 route get 1.1.1.1 | awk '{print $7; exit}')
-    echo "Local IP: $LOCAL_IP"
+  private)
+    PRIVATE_IP=$(ip -4 route get 1.1.1.1 | awk '{print $7; exit}')
+    echo "Private IP: $PRIVATE_IP"
 
-    print_qr_safe "$LOCAL_IP"
+    print_qr_safe "$PRIVATE_IP"
     ;;
     
-  global)
+  public)
     PUBLIC_IP=$(curl -m 1 -s ifconfig.me 2>/dev/null \
       || curl -m 1 -s ipinfo.io/ip 2>/dev/null \
       || echo "unknown")

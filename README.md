@@ -15,7 +15,7 @@ A small Bash utility for quickly displaying your private or public IP address, w
 - `bash`
 - [`qrencode`](https://fukuchi.org/works/qrencode/) — for QR code output
 - `curl` — for fetching the public IP
-- `iproute2` (`ip` command) — for resolving the private IP
+- `iproute2` (`ip` command) — for resolving the private IP on Linux (macOS uses the built-in `route` / `ipconfig`)
 
 Install dependencies on Debian/Ubuntu:
 
@@ -85,7 +85,7 @@ whatsmyip public --no-qrcode
 
 ## How it works
 
-- **Private IP** is resolved via `ip -4 route get 1.1.1.1`, which returns the source IP your machine would use to reach the internet.
+- **Private IP** is the source IP your machine would use to reach the internet. On Linux it's resolved via `ip -4 route get 1.1.1.1`; on macOS, `route -n get 1.1.1.1` finds the outbound interface and `ipconfig getifaddr` reads its address.
 - **Public IP** is fetched from `ifconfig.me`, falling back to `ipinfo.io/ip` if the first request fails or times out (1 second).
 - The QR code encodes a `http://<ip>[:port]` URL, suitable for scanning with a phone to open the address in a browser.
 
